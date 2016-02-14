@@ -12,59 +12,36 @@ phantom.create(function (ph) {
 			if(success) {
 				var intervalCount = 0;
 				var ajaxInterval = setInterval(function() {
-					if(++intervalCount < 50){
-						//console.log("Scrolling (" + intervalCount + ") > " + currentCatlink);
-						page.evaluate(function() {
-							var totalItemCount  = parseInt($("count.total-count").text());
-							var lastEntryNumber = parseInt($("span.entryNumber").last().text().replace(".",""));	
-							
-							// scroll as long as this is true
-							if(totalItemCount > lastEntryNumber) {
-								window.scrollTo(0,document.body.scrollHeight);
-								return false;
-							} else {
-							// once at the bottom, exctact stuff
-								var itemLinks = {};
-								$("div.headbox a").each(function(index,value) {  
-									var link = $(value).attr("href");
-									if(link.indexOf("branchenbuch") > -1) itemLinks[link] = 1;
-								});
-								return itemLinks;
-							}
-						},function(links) {
-							if(links) {
-								ph.exit();
-								clearInterval(ajaxInterval);
-								itemLinks[currentCatlink] = Object.keys(links);
-								completed++;
-								writeObjectToFile(itemLinks,filePath,function() {
-									console.log("Done saving categories[" + Object.keys(itemLinks).length + "].links[" + Object.keys(links).length + "] to disk.");
-									recurseCategoryLinks();	
-								});
-							}
-						}); // page evaluate
-					} else {
-						console.log("Giving up on > " + currentCatlink);
-						page.evaluate(function() {
+					//console.log("Scrolling (" + intervalCount + ") > " + currentCatlink);
+					page.evaluate(function() {
+						var totalItemCount  = parseInt($("count.total-count").text());
+						var lastEntryNumber = parseInt($("span.entryNumber").last().text().replace(".",""));	
+						
+						// scroll as long as this is true
+						if(totalItemCount > lastEntryNumber) {
+							window.scrollTo(0,document.body.scrollHeight);
+							return false;
+						} else {
+						// once at the bottom, exctact stuff
 							var itemLinks = {};
 							$("div.headbox a").each(function(index,value) {  
 								var link = $(value).attr("href");
 								if(link.indexOf("branchenbuch") > -1) itemLinks[link] = 1;
 							});
 							return itemLinks;
-						},function(links) {
-							if(links) {
-								ph.exit();
-								clearInterval(ajaxInterval);
-								itemLinks[currentCatlink] = Object.keys(links);
-								completed++;
-								writeObjectToFile(itemLinks,filePath,function() {
-									console.log("Done saving categories[" + Object.keys(itemLinks).length + "].links[" + Object.keys(links).length + "] to disk.");
-									recurseCategoryLinks();	
-								});
-							}
-						}); // page evaluate								
-					}
+						}
+					},function(links) {
+						if(links) {
+							ph.exit();
+							clearInterval(ajaxInterval);
+							itemLinks[currentCatlink] = Object.keys(links);
+							completed++;
+							writeObjectToFile(itemLinks,filePath,function() {
+								console.log("Done saving categories[" + Object.keys(itemLinks).length + "].links[" + Object.keys(links).length + "] to disk.");
+								recurseCategoryLinks();	
+							});
+						}
+					}); // page evaluate
 				},500);
 			} else {
 				console.log("Phantom could not load page.");
